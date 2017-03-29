@@ -1,0 +1,15 @@
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+**.pyc
+**.gz
+data/
+download/
+submits/
+models/
+logs/
+*.ipynb
+*.zip
+*.tgz
+.kaggle-cli
+.vscode
