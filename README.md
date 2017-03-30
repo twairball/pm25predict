@@ -38,3 +38,26 @@ Prototype RNN approach to predicting PM2.5 time series
     # get training and testing labels for measurement
     train_labels, test_labels = base_model.get_labels()
 ````
+
+### Online system
+
+Data pipeline is captured via indoor and outdoor data sources to influx db. 
+- indoor sensor data
+- outdoor atmosphere API
+
+#### Pipeline
+- Pull latest data into caching mechanism
+- Feed cache data to model to display prediction
+- At time interval, feed cache data to update model
+- Pull next interval data and update cache
+
+#### Monitoring
+- grafana dashboard
+- display current cache data (indoor, outdoor)
+- display current prediction
+- track historical predictions vs actual 
+
+#### To be explored
+- How much training data is needed before model is accurate?
+- Add additional weather data
+- Measure accuracy of t+N hours forecasting
