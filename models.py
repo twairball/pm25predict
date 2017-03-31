@@ -1,96 +1,84 @@
 import keras
 from keras import backend as K
-from keras.utils.data_utils import get_file
-from keras.utils import np_utils
-from keras.utils.np_utils import to_categorical
 from keras.models import Sequential, Model
-from keras.layers import Input, Embedding, Reshape, merge, LSTM, Bidirectional
-from keras.layers import TimeDistributed, Activation, SimpleRNN, GRU
+from keras.layers import Input, LSTM
 from keras.layers.core import Flatten, Dense, Dropout, Lambda
-from keras.regularizers import l2, activity_l2, l1, activity_l1
-from keras.layers.normalization import BatchNormalization
 from keras.optimizers import SGD, RMSprop, Adam
-from keras.utils.layer_utils import layer_from_config
-from keras.metrics import categorical_crossentropy, categorical_accuracy
-from keras.layers.convolutional import *
-from keras.preprocessing import image, sequence
-from keras.preprocessing.text import Tokenizer
 
-from keras.layers import TimeDistributed, Activation
-from numpy.random import choice
+from sklearn.metrics import mean_squared_error
+import math
 
-from dataset import *
+from datasets import Dataset, DatasetLoader
 
 class BaseModel():
-    def __init__(self, df_feats, df_labels, look_back=3):
+    def __init__(self, look_back=3):
+        # LSTM dimensions
         self.look_back = look_back
         self.num_features = df_feats.shape[1]
 
-        # features dataset
-        self.ds_feats = Dataset(df_feats)        
-        # labels dataset
-        self.ds_labels = Dataset(df_labels)
-
         # create model
         self.model = create_lstm_model(input_shape=(self.look_back, self.num_features))
-    
-    def get_datasets(self):
-        ### TODO: refactor
-        # get train set
-        train, test = self.ds_feats.split_datasets()
-        # get labels
-        train_labels, test_labels = self.ds_labels.split_datasets()
 
-        # create datasets with lookback
-        train_feats, train_labels = lookback_dataset(train, train_labels, self.look_back)
-        test_feats, test_labels = lookback_dataset(test, test_labels, self.look_back)
-
-        return train_feats, train_labels, test_feats, test_labels
-
-    def label_scale(self):
-        return self.ds_labels.df_scales[0]
-
-    def get_labels(self):
+    def train(self, dataset_loader, nb_epoch=50):
         """
-        Returns (un-normlized) labels
+        Train model from dataset
         """
-        train_feats, train_labels, test_feats, test_labels = self.get_datasets()
-        # revert scaling
-        train_labels = train_labels * self.label_scale()
-        test_labels = test_labels * self.label_scale()
-        return train_labels, test_labels
-
-    def train(self, nb_epoch=50):
-        
-        train_feats, train_labels, test_feats, test_labels = self.get_datasets()
-        
+        train_feats, train_labels, test_feats, test_labels = dataset_loader.get_datasets()
         # reshape input to be [samples, time steps, features]
         train_feats = reshape_for_lstm(train_feats, self.look_back)
 
         # train model
         self.model.fit(train_feats, train_labels, nb_epoch=nb_epoch, batch_size=1, verbose=2)
     
-    def test(self):
+    def update(self, dataset_loader):
+        """
+        Update model with observations
+        """
+        self.train(dataset_loader, nb_epoch=1)
 
-        train_feats, train_labels, test_feats, test_labels = self.get_datasets()
-        
+    def test(self, dataset_loader):
+        """
+        Test model vs testing data
+        """
+        train_feats, train_labels, test_feats, test_labels = dataset_loader.get_datasets()
+
         # reshape input to be [samples, time steps, features]
         train_feats = reshape_for_lstm(train_feats, self.look_back)
         test_feats = reshape_for_lstm(test_feats, self.look_back)
 
         # evaluate model 
         testPredict, trainPredict = evaluate_model(self.model, train_feats, train_labels, test_feats, test_labels)
-
+       
         # revert scaling
-        testPredict = testPredict * self.label_scale()
+        testPredict = testPredict * dataset_loader.label_scale()
         return testPredict
+
+    def predict(self, dataset_loader):
+        """
+        Make a prediction
+        """
+        train_feats, train_labels, test_feats, test_labels = dataset_loader.get_datasets()
+
+        # reshape input to be [samples, time steps, features]
+        test_feats = reshape_for_lstm(test_feats, self.look_back)
+
+        # predict
+        testPredict = model.predict(test_feats, batch_size=1)
+
+        # take 1st prediction only
+        testPredict = testPredict[0]
+        
+        # revert scaling
+        testPredict = testPredict * dataset_loader.label_scale()
+        return testPredict
+
 
 ##  
 ## Data preparation
 ##
 
 def reshape_for_lstm(x, look_back=3):
-    # reshape input to be [samples, time steps, features]
+    """ reshape input to be [samples, time steps, features] """
     return np.reshape(x, (x.shape[0], look_back, x.shape[-1]))
 
 ##
@@ -102,10 +90,6 @@ def create_lstm_model(input_shape=(3,6)):
     model.add(Dense(1))
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model 
-
-
-from sklearn.metrics import mean_squared_error
-import math
 
 def evaluate_model(model, train_feats, train_labels, test_feats, test_labels):
     # make predictions

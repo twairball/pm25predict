@@ -33,7 +33,7 @@ def lookback_dataset(features, labels, look_back=3):
 
 
 class Dataset():
-    def __init__(self, df, ratio=0.9):
+    def __init__(self, df):
         # keep max for normalizing and inverting
         self.df_scales = df.max()
         self.df = df
@@ -43,12 +43,15 @@ class Dataset():
         df_norm = self.df / self.df_scales
         return df_norm.values
 
-    def split_datasets(self):
-        dataset = self.normalized_values()
-        return split_datasets(dataset, self.ratio)
-
-class DatasetPreprocessor():
-    def __init__(self, df_feats, df_labels, look_back=3):
+class DatasetLoader():
+    """
+    Dataset loader for model experimentation
+    :param df_feats: dataframe of features
+    :param df_labels: dataframe of labels, expects single column
+    :param look_back: LSTM look_back dimension for reshaping data
+    :param ratio: ratio of training data vs test data. Default = 0.9
+    """
+    def __init__(self, df_feats, df_labels, look_back=3, ratio=0.9):
         self.look_back = look_back
         # features dataset
         self.ds_feats = Dataset(df_feats)        
@@ -56,11 +59,10 @@ class DatasetPreprocessor():
         self.ds_labels = Dataset(df_labels)
 
     def get_datasets(self):
-        ### TODO: refactor
         # get train set
-        train, test = self.ds_feats.split_datasets()
+        train, test = split_datasets(self.ds_feats.normalized_values(), self.ratio)
         # get labels
-        train_labels, test_labels = self.ds_labels.split_datasets()
+        train_labels, test_labels = split_datasets(self.ds_labels.normalized_values(), self.ratio)
 
         # create datasets with lookback
         train_feats, train_labels = lookback_dataset(train, train_labels, self.look_back)

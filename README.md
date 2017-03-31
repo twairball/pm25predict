@@ -18,32 +18,60 @@ Prototype RNN approach to predicting PM2.5 time series
 - Save as bcolz arrays
 
 
-### Useage
-
+### Experimentation
 - Supply pandas dataframe of features,  indexed by timeseries sampled by hour. 
 
 ````
-    from models import *
-    
-    # create model with dataframe features, df, 
+    from models import BaseModel
+    from datasets import Dataset, DatasetLoader
+
+    # create dataset with dataframe features, df, 
     # supply labels with dataframe with single column, df[['pm25]]
-    base_model = BaseModel(df, df[['pm25']], look_back=3)
+    dataset_loader = DatasetLoader(df, df[['pm25']], look_back=3, ratio=0.9)
 
+    # create model
+    base_model = BaseModel(look_back=3)
+    
     # train model 
-    base_model.train(nb_epoch=50)
+    base_model.train(dataset_loader, nb_epoch=50)
 
-    # test model, this will print RMSE errors
-    testPredict = base_model.test()
+    # test model on 10% of data, this will print RMSE errors
+    testPredict = base_model.test(dataset_loader)
 
     # get training and testing labels for measurement
-    train_labels, test_labels = base_model.get_labels()
+    train_labels, test_labels = dataset_loader.get_labels()
 ````
 
-### Online system
+### Online prediction
 
 Data pipeline is captured via indoor and outdoor data sources to influx db. 
 - indoor sensor data
 - outdoor atmosphere API
+
+Cruncher will need to supply last 3 hours (look_back=3) data as Dataframe and create dataset. 
+
+````
+    from loaders import ModelLoader
+    from models import BaseModel
+    from datasets import Dataset, DatasetLoader
+
+    # create dataset with dataframe features, df, 
+    # supply labels with dataframe with single column, df[['pm25]]
+    dataset_loader = DatasetLoader(df, df[['pm25']], look_back=3, ratio=1)
+
+    # load current model
+    loader = ModelLoader()
+
+    # make prediction
+    predict = loader.base_model.predict(dataset_loader)
+
+    # update model
+    loader.base_model.update(dataset_loader)
+
+    # save model
+    loader.save_model("path/to/models/YYYYMMDDHHMM_model.h5")
+
+````
 
 #### Pipeline
 - Pull latest data into caching mechanism
