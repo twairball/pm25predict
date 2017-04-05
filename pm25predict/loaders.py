@@ -1,5 +1,5 @@
-from datasets import Dataset, DatasetLoader
-from models import BaseModel
+from .datasets import Dataset, DatasetLoader
+from .models import BaseModel
 
 import os
 from glob import glob

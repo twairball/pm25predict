@@ -8,7 +8,7 @@ from keras.optimizers import SGD, RMSprop, Adam
 from sklearn.metrics import mean_squared_error
 import math
 import numpy as np
-from datasets import Dataset, DatasetLoader
+from .datasets import Dataset, DatasetLoader
 
 class BaseModel():
     def __init__(self, num_features=13, look_back=3):
