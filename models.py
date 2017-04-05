@@ -7,14 +7,14 @@ from keras.optimizers import SGD, RMSprop, Adam
 
 from sklearn.metrics import mean_squared_error
 import math
-
+import numpy as np
 from datasets import Dataset, DatasetLoader
 
 class BaseModel():
-    def __init__(self, look_back=3):
+    def __init__(self, num_features=13, look_back=3):
         # LSTM dimensions
         self.look_back = look_back
-        self.num_features = df_feats.shape[1]
+        self.num_features = num_features
 
         # create model
         self.model = create_lstm_model(input_shape=(self.look_back, self.num_features))
@@ -63,7 +63,7 @@ class BaseModel():
         test_feats = reshape_for_lstm(test_feats, self.look_back)
 
         # predict
-        testPredict = model.predict(test_feats, batch_size=1)
+        testPredict = self.model.predict(test_feats, batch_size=1)
 
         # take 1st prediction only
         testPredict = testPredict[0]

@@ -51,16 +51,20 @@ Data pipeline is captured via indoor and outdoor data sources to influx db.
 Cruncher will need to supply last 3 hours (look_back=3) data as Dataframe and create dataset. 
 
 ````
-    from loaders import ModelLoader
+    from loaders import ModelLoader, InfluxDataLoader
     from models import BaseModel
     from datasets import Dataset, DatasetLoader
+
+    # load data from influxdb
+    df = InfluxDataLoader(database='gams', tables=['indoor', 'outdoor']).df
 
     # create dataset with dataframe features, df, 
     # supply labels with dataframe with single column, df[['pm25]]
     dataset_loader = DatasetLoader(df, df[['pm25']], look_back=3, ratio=1)
 
     # load current model
-    loader = ModelLoader()
+    model_path = "path/to/models/"
+    loader = ModelLoader(model_path)
 
     # make prediction
     predict = loader.base_model.predict(dataset_loader)
@@ -69,7 +73,7 @@ Cruncher will need to supply last 3 hours (look_back=3) data as Dataframe and cr
     loader.base_model.update(dataset_loader)
 
     # save model
-    loader.save_model("path/to/models/YYYYMMDDHHMM_model.h5")
+    loader.save_model(model_path + "model_filename.h5")
 
 ````
 

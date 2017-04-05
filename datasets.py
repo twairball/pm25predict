@@ -9,16 +9,16 @@ def split_datasets(dataset, ratio=0.8):
     train, test = dataset[0:train_size,:], dataset[train_size:len(dataset),:]
     return train, test
 
-def create_dataset(dataset, look_back=3):
-    """
-    Create dataset with look_back
-    """
-    dataX, dataY = [], []
-    for i in range(len(dataset)-look_back-1):
-        a = dataset[i:(i+look_back), :]
-        dataX.append(a)
-        dataY.append(dataset[i + look_back, ])
-    return np.array(dataX), np.array(dataY)
+# def create_dataset(dataset, look_back=3):
+#     """
+#     Create dataset with look_back
+#     """
+#     dataX, dataY = [], []
+#     for i in range(len(dataset)-look_back-1):
+#         a = dataset[i:(i+look_back), :]
+#         dataX.append(a)
+#         dataY.append(dataset[i + look_back, ])
+#     return np.array(dataX), np.array(dataY)
 
 def lookback_dataset(features, labels, look_back=3):
     """
@@ -37,11 +37,14 @@ class Dataset():
         # keep max for normalizing and inverting
         self.df_scales = df.max()
         self.df = df
-        self.ratio = ratio
     
     def normalized_values(self):
         df_norm = self.df / self.df_scales
-        return df_norm.values
+        vals = df_norm.values
+        # reshape if 1-D series
+        if len(vals.shape) == 1:
+            vals = np.reshape(vals, (vals.shape[0], 1))
+        return vals
 
 class DatasetLoader():
     """
@@ -53,6 +56,7 @@ class DatasetLoader():
     """
     def __init__(self, df_feats, df_labels, look_back=3, ratio=0.9):
         self.look_back = look_back
+        self.ratio = ratio
         # features dataset
         self.ds_feats = Dataset(df_feats)        
         # labels dataset
@@ -71,7 +75,7 @@ class DatasetLoader():
         return train_feats, train_labels, test_feats, test_labels
     
     def label_scale(self):
-        return self.ds_labels.df_scales[0]
+        return self.ds_labels.df_scales[0] or self.ds_labels.df_scales
 
     def get_labels(self):
         """
