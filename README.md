@@ -93,3 +93,9 @@ Cruncher will need to supply last 3 hours (look_back=3) data as Dataframe and cr
 - How much training data is needed before model is accurate?
 - Add additional weather data
 - Measure accuracy of t+N hours forecasting
+
+
+### dev notes
+Generate pip reqs
+    
+    pipreqs . --force
