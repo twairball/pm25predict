@@ -9,9 +9,9 @@ from influxdb import DataFrameClient
 
 class ModelLoader():
 
-    def __init__(self, dirpath='.'):
+    def __init__(self, num_features=13, look_back=3, dirpath='.'):
         # TODO: how to figure out model dimension from loading from file?
-        self.base_model = BaseModel()
+        self.base_model = BaseModel(num_features=num_features, look_back=look_back)
         self.load_latest_model(dirpath)
 
     def load_latest_model(self, dirpath):
