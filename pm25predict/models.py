@@ -17,7 +17,10 @@ class BaseModel():
         self.num_features = num_features
 
         # create model
-        self.model = create_lstm_model(input_shape=(self.look_back, self.num_features))
+        self.model = self.create_model(input_shape=(self.look_back, self.num_features))
+    
+    def create_model(self, input_shape):
+        return create_lstm_model(input_shape)
 
     def train(self, dataset_loader, nb_epoch=50):
         """
@@ -73,6 +76,11 @@ class BaseModel():
         return testPredict
 
 
+class StackedModel(BaseModel):
+    def create_model(self, input_shape):
+        return create_stacked_lstm_model(input_shape)
+
+
 ##  
 ## Data preparation
 ##
@@ -90,6 +98,19 @@ def create_lstm_model(input_shape=(3,6)):
     model.add(Dense(1))
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model 
+
+def create_stacked_lstm_model(input_shape=(3,6)):
+    model = Sequential()
+    model.add(LSTM(8, input_shape=input_shape, return_sequences=True))
+    # model.add(Dropout(0.5))
+    # model.add(LSTM(16, return_sequences=True))
+    # model.add(Dropout(0.5))
+    model.add(LSTM(8))
+    # model.add(Dropout(0.5))
+    model.add(Dense(1))
+    model.compile(loss='mean_squared_error', optimizer='adam')
+    return model 
+
 
 def evaluate_model(model, train_feats, train_labels, test_feats, test_labels):
     # make predictions

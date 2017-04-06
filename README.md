@@ -22,9 +22,8 @@ Prototype RNN approach to predicting PM2.5 time series
 - Supply pandas dataframe of features,  indexed by timeseries sampled by hour. 
 
 ````
-    from models import BaseModel
-    from datasets import Dataset, DatasetLoader
-
+    from pm25predict import ModelLoader, DatasetLoader, BaseModel
+        
     # create dataset with dataframe features, df, 
     # supply labels with dataframe with single column, df[['pm25]]
     dataset_loader = DatasetLoader(df, df[['pm25']], look_back=3, ratio=0.9)
