@@ -6,6 +6,7 @@ from glob import glob
 from copy import copy, deepcopy
 from datetime import timedelta, datetime
 
+import h5py
 from influxdb import DataFrameClient
 
 class ModelLoader():

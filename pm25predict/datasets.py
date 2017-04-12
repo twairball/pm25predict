@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 def split_datasets(dataset, ratio=0.8):
     """
@@ -8,17 +9,6 @@ def split_datasets(dataset, ratio=0.8):
     test_size = len(dataset) - train_size
     train, test = dataset[0:train_size,:], dataset[train_size:len(dataset),:]
     return train, test
-
-# def create_dataset(dataset, look_back=3):
-#     """
-#     Create dataset with look_back
-#     """
-#     dataX, dataY = [], []
-#     for i in range(len(dataset)-look_back-1):
-#         a = dataset[i:(i+look_back), :]
-#         dataX.append(a)
-#         dataY.append(dataset[i + look_back, ])
-#     return np.array(dataX), np.array(dataY)
 
 def lookback_dataset(features, labels, look_back=3):
     """
