@@ -58,7 +58,10 @@ class InfluxDataLoader():
         return df
 
 
-## sample hourly mean
-## for missing intervals we fill forward
 def hourly(df):
-    return df.resample('H').mean().fillna(method='ffill')
+    """
+    Sample hourly mean values. 
+    For missing intervals we fill forward
+    Additionally fill backwards (in case 1st row is missing)
+    """
+    return df.resample('H').mean().fillna(method='ffill').fillna(method='bfill')
