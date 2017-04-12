@@ -2,28 +2,15 @@
 
 Prototype RNN approach to predicting PM2.5 time series
 
-### General Approach:
-- RNN with LSTM K nodes with N past nodes
-- Train baseline model 
-- Predict on Test set
-- measure loss
-
-#### Questions:
-** How to setup cross-validation? 
-** How to add weather data? (wind, humidity, air pressure)
-
-### Create Dataset
-- Sample hourly data
-- Add column for time of day, day of week
-- Save as bcolz arrays
-
-
 ### Experimentation
 - Supply pandas dataframe of features,  indexed by timeseries sampled by hour. 
 
 ````
     from pm25predict import ModelLoader, DatasetLoader, ModelContext
         
+    # load data from influxdb
+    df = InfluxDataLoader(database='gams', tables=['indoor', 'outdoor']).df
+
     # create dataset with dataframe features, df, 
     # supply labels with dataframe with single column, df[['pm25]]
     dataset_loader = DatasetLoader(df, df[['pm25']], look_back=3, ratio=0.9)
@@ -47,17 +34,12 @@ Data pipeline is captured via indoor and outdoor data sources to influx db.
 - indoor sensor data
 - outdoor atmosphere API
 
-Cruncher will need to supply last 3 hours (look_back=3) data as Dataframe and create dataset. 
+Cruncher will need to supply last 3+2 hours (look_back=3) data as Dataframe and create dataset. 
 
 ````
     from pm25predict import ModelLoader, DatasetLoader, ModelContext
 
-    # load data from influxdb
-    df = InfluxDataLoader(database='gams', tables=['indoor', 'outdoor']).df
-
-    # create dataset with dataframe features, df, 
-    # supply labels with dataframe with single column, df[['pm25]]
-    # ratio=0. will be all data as testing features
+    # load dataset with ratio = 0.0 for all testing features
     dataset_loader = DatasetLoader(df, df[['pm25']], look_back=3, ratio=0.)
 
     # load current model
@@ -76,28 +58,16 @@ Cruncher will need to supply last 3 hours (look_back=3) data as Dataframe and cr
     loader.model_context.update(dataset_loader)
 
     # save model
-    loader.model_context.model.save_model(model_path + "model_filename.h5")
+    loader.save_model()
 ````
-
-#### Pipeline
-- Pull latest data into caching mechanism
-- Feed cache data to model to display prediction
-- At time interval, feed cache data to update model
-- Pull next interval data and update cache
-
-#### Monitoring
-- grafana dashboard
-- display current cache data (indoor, outdoor)
-- display current prediction
-- track historical predictions vs actual 
-
-#### To be explored
-- How much training data is needed before model is accurate?
-- Add additional weather data
-- Measure accuracy of t+N hours forecasting
-
 
 ### dev notes
 Generate pip reqs
     
     pipreqs . --force
+
+#### TODO
+- Monitoring with grafana dashboard, and measure predictions vs actual
+- Add weather data (wind, humidity, air pressure)
+- Predict t+N hours forecasting, and measure accuracy. 
+
