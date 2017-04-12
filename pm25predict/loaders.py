@@ -4,12 +4,15 @@ from .models import ModelContext
 import os
 from glob import glob
 from copy import copy, deepcopy
+from datetime import timedelta, datetime
 
 from influxdb import DataFrameClient
 
 class ModelLoader():
 
-    def __init__(self, num_features=13, look_back=3, dirpath='.'):
+    def __init__(self, num_features=13, look_back=3, dirpath='./'):
+        self.dirpath = dirpath
+
         # TODO: how to figure out model dimension from loading from file?
         self.model_context = ModelContext(num_features=num_features, look_back=look_back)
         self.load_latest_model(dirpath)
@@ -27,7 +30,11 @@ class ModelLoader():
     def load_model(self, path):
         self.model_context.model.load_weights(path)
     
-    def save_model(self, path):
+    def save_model(self, path=None):
+        if path == None:
+            filename = "%s_model.h5" % datetime.now().strftime("%Y%m%d%H%M")
+            path = self.dirpath + filename
+        print("[ModelLoader] saving model to %s" % path)
         self.model_context.model.save_weights(path)
 
 class InfluxDataLoader():

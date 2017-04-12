@@ -76,7 +76,7 @@ Cruncher will need to supply last 3 hours (look_back=3) data as Dataframe and cr
     loader.model_context.update(dataset_loader)
 
     # save model
-    loader.save_model(model_path + "model_filename.h5")
+    loader.model_context.model.save_model(model_path + "model_filename.h5")
 ````
 
 #### Pipeline
