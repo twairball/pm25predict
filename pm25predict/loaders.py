@@ -11,13 +11,15 @@ from influxdb import DataFrameClient
 
 class ModelLoader():
 
-    def __init__(self, num_features=13, look_back=3, dirpath='./'):
+    def __init__(self, num_features=13, look_back=3, dirpath='./', load_latest_model=True):
         self.dirpath = dirpath
 
         # TODO: how to figure out model dimension from loading from file?
         self.model_context = ModelContext(num_features=num_features, look_back=look_back)
-        self.load_latest_model(dirpath)
 
+        if load_latest_model:
+            self.load_latest_model(dirpath)
+            
     def load_latest_model(self, dirpath):
         # look in directory and find newest model 
         files = glob(dirpath + '*.h5')
