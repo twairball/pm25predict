@@ -22,20 +22,20 @@ Prototype RNN approach to predicting PM2.5 time series
 - Supply pandas dataframe of features,  indexed by timeseries sampled by hour. 
 
 ````
-    from pm25predict import ModelLoader, DatasetLoader, BaseModel
+    from pm25predict import ModelLoader, DatasetLoader, ModelContext
         
     # create dataset with dataframe features, df, 
     # supply labels with dataframe with single column, df[['pm25]]
     dataset_loader = DatasetLoader(df, df[['pm25']], look_back=3, ratio=0.9)
 
     # create model
-    base_model = BaseModel(look_back=3)
+    model_context = ModelContext(look_back=3)
     
     # train model 
-    base_model.train(dataset_loader, nb_epoch=50)
+    model_context.train(dataset_loader, nb_epoch=50)
 
     # test model on 10% of data, this will print RMSE errors
-    testPredict = base_model.test(dataset_loader)
+    testPredict = model_context.test(dataset_loader)
 
     # get training and testing labels for measurement
     train_labels, test_labels = dataset_loader.get_labels()
@@ -50,30 +50,33 @@ Data pipeline is captured via indoor and outdoor data sources to influx db.
 Cruncher will need to supply last 3 hours (look_back=3) data as Dataframe and create dataset. 
 
 ````
-    from loaders import ModelLoader, InfluxDataLoader
-    from models import BaseModel
-    from datasets import Dataset, DatasetLoader
+    from pm25predict import ModelLoader, DatasetLoader, ModelContext
 
     # load data from influxdb
     df = InfluxDataLoader(database='gams', tables=['indoor', 'outdoor']).df
 
     # create dataset with dataframe features, df, 
     # supply labels with dataframe with single column, df[['pm25]]
-    dataset_loader = DatasetLoader(df, df[['pm25']], look_back=3, ratio=1)
+    # ratio=0. will be all data as testing features
+    dataset_loader = DatasetLoader(df, df[['pm25']], look_back=3, ratio=0.)
 
     # load current model
     model_path = "path/to/models/"
     loader = ModelLoader(model_path)
 
     # make prediction
-    predict = loader.base_model.predict(dataset_loader)
+    predict = loader.model_context.predict(dataset_loader)
+````
+
+````
+    # load dataset with ratio = 1.0 for all training features
+    dataset_loader = DatasetLoader(df, df[['pm25']], look_back=3, ratio=1.)
 
     # update model
-    loader.base_model.update(dataset_loader)
+    loader.model_context.update(dataset_loader)
 
     # save model
     loader.save_model(model_path + "model_filename.h5")
-
 ````
 
 #### Pipeline

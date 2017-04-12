@@ -10,7 +10,7 @@ import math
 import numpy as np
 from .datasets import Dataset, DatasetLoader
 
-class BaseModel():
+class ModelContext():
     def __init__(self, num_features=13, look_back=3):
         # LSTM dimensions
         self.look_back = look_back
@@ -22,7 +22,7 @@ class BaseModel():
     def create_model(self, input_shape):
         return create_lstm_model(input_shape)
 
-    def train(self, dataset_loader, nb_epoch=50):
+    def train(self, dataset_loader, batch_size=1, nb_epoch=50):
         """
         Train model from dataset
         """
@@ -31,7 +31,7 @@ class BaseModel():
         train_feats = reshape_for_lstm(train_feats, self.look_back)
 
         # train model
-        self.model.fit(train_feats, train_labels, nb_epoch=nb_epoch, batch_size=1, verbose=2)
+        self.model.fit(train_feats, train_labels, nb_epoch=nb_epoch, batch_size=batch_size, verbose=2)
     
     def update(self, dataset_loader):
         """
@@ -76,7 +76,7 @@ class BaseModel():
         return testPredict
 
 
-class StackedModel(BaseModel):
+class StackedModel(ModelContext):
     def create_model(self, input_shape):
         return create_stacked_lstm_model(input_shape)
 

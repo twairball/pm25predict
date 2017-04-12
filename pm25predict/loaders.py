@@ -1,5 +1,5 @@
 from .datasets import Dataset, DatasetLoader
-from .models import BaseModel
+from .models import ModelContext
 
 import os
 from glob import glob
@@ -11,7 +11,7 @@ class ModelLoader():
 
     def __init__(self, num_features=13, look_back=3, dirpath='.'):
         # TODO: how to figure out model dimension from loading from file?
-        self.base_model = BaseModel(num_features=num_features, look_back=look_back)
+        self.model_context = ModelContext(num_features=num_features, look_back=look_back)
         self.load_latest_model(dirpath)
 
     def load_latest_model(self, dirpath):
@@ -25,10 +25,10 @@ class ModelLoader():
             print("[ModelLoader] no model found at dir: %s" % dirpath)
 
     def load_model(self, path):
-        self.base_model.model.load_weights(path)
+        self.model_context.model.load_weights(path)
     
     def save_model(self, path):
-        self.base_model.model.save_weights(path)
+        self.model_context.model.save_weights(path)
 
 class InfluxDataLoader():
 
