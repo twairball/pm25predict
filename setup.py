@@ -14,7 +14,7 @@ with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
 
 setup(
     name='pm25predict',
-    version='0.1',
+    version='0.4',
     description='PM2.5predict',
     author='twairball',
     author_email='twairball@yahoo.com',
